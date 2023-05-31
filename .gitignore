@@ -1,0 +1,10 @@
+.venv 
+
+snowflake_credential.txt
+
+
+# ignore stuff for dbt
+dbtlearn/target/*
+dbtlearn/logs/*
+
+

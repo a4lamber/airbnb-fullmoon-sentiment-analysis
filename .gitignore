@@ -2,9 +2,11 @@
 
 snowflake_credential.txt
 
+.DS_Store
 
 # ignore stuff for dbt
 dbtlearn/target/*
 dbtlearn/logs/*
 
+logs/
 

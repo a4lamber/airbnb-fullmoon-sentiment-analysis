@@ -41,6 +41,10 @@
   - [Generic Tests](#generic-tests)
   - [Singular Tests](#singular-tests)
 - [13 Macros, Custom Tests, and Packages](#13-macros-custom-tests-and-packages)
+  - [Macros Overview](#macros-overview)
+  - [Lab: Creating macro](#lab-creating-macro)
+  - [Lab: Writing Custom Generic Tests](#lab-writing-custom-generic-tests)
+  - [Lab: Installing third-party packages](#lab-installing-third-party-packages)
 - [14 Documentation](#14-documentation)
 - [15 Analyses, Hooks and Exposures](#15-analyses-hooks-and-exposures)
 - [16 dbt Hero](#16-dbt-hero)
@@ -643,13 +647,123 @@ Please see the following two singular tests:
 1. [tests/consistent_created_at.sql](../dbtlearn/tests/consistent_created_at.sql): test if all the reviews in reviewers table is later than the listing created date (A airbnb property has to be listed before someone jump in to live and comment on the property, right?).
 2. [tests/dim_listing_minimum_nights.sql](../dbtlearn/tests/dim_listings_minimum_nights.sql) : test if some host posts 0 as the minimum_nights to stay. (stay 0 night makes no sense for airbnb analytics)
 
-
-
-
-
+Run the following commands to run test for all tests (generic tests defined in `schema.yml` and singular tests in `dbtproject/tests/`)
+```bash
+dbt test
+```
 
 
 # 13 Macros, Custom Tests, and Packages
+
+- understand how macros are created
+- use macros to implement your own generic tests
+- find and install third-party dbt packages
+
+## Macros Overview
+
+- macros are jinja templates created in the macros folder
+- there are many built-in macros in dbt
+- use macros in the model definitions and tests
+- a special macro, called test, can be used for implementing your own generic tests
+- dbt packages can be installed easily to get access to a plethora of macros and tests
+
+## Lab: Creating macro
+
+1. After you define your macro for custom generic test in [`macros/no_nulls_in_columns.sql`](../dbtlearn/macros/no_nulls_in_columns.sql)
+2. Then you run the **no_null_in_columns** test for dim_listings table defined in [`macros/no_nulls_in_dim_listings.sql`](../dbtlearn/macros/no_nulls_in_dim_listings.sql)
+
+After you wrote up your SQL, you do this
+
+```bash
+# run dbt test on table "dim_listings_cleansed" only
+dbt test --select dim_listings_cleansed 
+```
+
+The output is
+
+```
+18:48:06  Running with dbt=1.5.1
+18:48:06  Found 8 models, 7 tests, 2 snapshots, 0 analyses, 322 macros, 0 operations, 1 seed file, 3 sources, 0 exposures, 0 metrics, 0 groups
+18:48:06  
+18:48:08  Concurrency: 1 threads (target='dev')
+18:48:08  
+18:48:08  1 of 7 START test accepted_values_dim_listings_cleansed_room_type__Entire_home_apt__Private_room__Shared_room__Hotel_room  [RUN]
+18:48:08  1 of 7 PASS accepted_values_dim_listings_cleansed_room_type__Entire_home_apt__Private_room__Shared_room__Hotel_room  [PASS in 0.48s]
+18:48:08  2 of 7 START test consistent_created_at ........................................ [RUN]
+18:48:08  2 of 7 PASS consistent_created_at .............................................. [PASS in 0.45s]
+18:48:08  3 of 7 START test dim_listings_minimum_nights .................................. [RUN]
+18:48:09  3 of 7 PASS dim_listings_minimum_nights ........................................ [PASS in 0.61s]
+18:48:09  4 of 7 START test not_null_dim_listings_cleansed_host_id ....................... [RUN]
+18:48:10  4 of 7 PASS not_null_dim_listings_cleansed_host_id ............................. [PASS in 0.45s]
+18:48:10  5 of 7 START test not_null_dim_listings_cleansed_listing_id .................... [RUN]
+18:48:10  5 of 7 PASS not_null_dim_listings_cleansed_listing_id .......................... [PASS in 0.45s]
+18:48:10  6 of 7 START test relationships_dim_listings_cleansed_host_id__host_id__ref_dim_hosts_cleansed_  [RUN]
+18:48:10  6 of 7 PASS relationships_dim_listings_cleansed_host_id__host_id__ref_dim_hosts_cleansed_  [PASS in 0.47s]
+18:48:10  7 of 7 START test unique_dim_listings_cleansed_listing_id ...................... [RUN]
+18:48:11  7 of 7 PASS unique_dim_listings_cleansed_listing_id ............................ [PASS in 0.44s]
+18:48:11  
+18:48:11  Finished running 7 tests in 0 hours 0 minutes and 4.85 seconds (4.85s).
+18:48:11  
+18:48:11  Completed successfully
+18:48:11  
+18:48:11  Done. PASS=7 WARN=0 ERROR=0 SKIP=0 TOTAL=7
+```
+
+
+## Lab: Writing Custom Generic Tests
+
+In our macros, let's write a macro for generic tests
+
+```jinja
+-- custom test, making sure everything is postive 
+-- by selecting negative cases
+
+{% test positive_value(model, column_name) %}
+SELECT
+    *
+FROM
+    {{ model }}
+WHERE 
+    {{ column_name }} < 1
+{% endtest %}
+```
+
+
+
+In the output, you should see `6 of 8 START test positive_value_dim_listings_cleansed_minimum_nights `, which is the test we just wrote.
+
+```plaintext
+19:06:10  Running with dbt=1.5.1
+19:06:10  Found 8 models, 8 tests, 2 snapshots, 0 analyses, 323 macros, 0 operations, 1 seed file, 3 sources, 0 exposures, 0 metrics, 0 groups
+19:06:10  
+19:06:12  Concurrency: 1 threads (target='dev')
+19:06:12  
+19:06:12  1 of 8 START test accepted_values_dim_listings_cleansed_room_type__Entire_home_apt__Private_room__Shared_room__Hotel_room  [RUN]
+19:06:13  1 of 8 PASS accepted_values_dim_listings_cleansed_room_type__Entire_home_apt__Private_room__Shared_room__Hotel_room  [PASS in 0.69s]
+19:06:13  2 of 8 START test consistent_created_at ........................................ [RUN]
+19:06:13  2 of 8 PASS consistent_created_at .............................................. [PASS in 0.73s]
+19:06:13  3 of 8 START test dim_listings_minimum_nights .................................. [RUN]
+19:06:14  3 of 8 PASS dim_listings_minimum_nights ........................................ [PASS in 0.81s]
+19:06:14  4 of 8 START test not_null_dim_listings_cleansed_host_id ....................... [RUN]
+19:06:15  4 of 8 PASS not_null_dim_listings_cleansed_host_id ............................. [PASS in 1.05s]
+19:06:15  5 of 8 START test not_null_dim_listings_cleansed_listing_id .................... [RUN]
+19:06:17  5 of 8 PASS not_null_dim_listings_cleansed_listing_id .......................... [PASS in 1.45s]
+19:06:17  6 of 8 START test positive_value_dim_listings_cleansed_minimum_nights .......... [RUN]
+19:06:18  6 of 8 PASS positive_value_dim_listings_cleansed_minimum_nights ................ [PASS in 1.11s]
+19:06:18  7 of 8 START test relationships_dim_listings_cleansed_host_id__host_id__ref_dim_hosts_cleansed_  [RUN]
+19:06:18  7 of 8 PASS relationships_dim_listings_cleansed_host_id__host_id__ref_dim_hosts_cleansed_  [PASS in 0.55s]
+19:06:18  8 of 8 START test unique_dim_listings_cleansed_listing_id ...................... [RUN]
+19:06:19  8 of 8 PASS unique_dim_listings_cleansed_listing_id ............................ [PASS in 0.43s]
+19:06:19  
+19:06:19  Finished running 8 tests in 0 hours 0 minutes and 8.54 seconds (8.54s).
+19:06:19  
+19:06:19  Completed successfully
+19:06:19  
+19:06:19  Done. PASS=8 WARN=0 ERROR=0 SKIP=0 TOTAL=8
+```
+
+## Lab: Installing third-party packages
+
 
 
 

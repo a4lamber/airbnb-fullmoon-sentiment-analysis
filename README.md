@@ -101,7 +101,5 @@ Now you are good to do!
 
 
 
-
-
 # Reference
-- [dbtlearn github](https://github.com/nordquant/complete-dbt-bootcamp-zero-to-hero)
+- [dbtlearn github, provide resources for the project](https://github.com/nordquant/complete-dbt-bootcamp-zero-to-hero)

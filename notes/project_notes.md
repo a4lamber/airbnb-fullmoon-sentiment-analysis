@@ -729,7 +729,6 @@ WHERE
 ```
 
 
-
 In the output, you should see `6 of 8 START test positive_value_dim_listings_cleansed_minimum_nights `, which is the test we just wrote.
 
 ```plaintext

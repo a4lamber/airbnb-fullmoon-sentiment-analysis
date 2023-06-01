@@ -97,6 +97,26 @@ Now you should have a dbt project directories like `tree -L 1`,
 10 directories, 2 files
 ```
 
+Now we need to install dbt-packages to make our life easier, [dbthub here](https://hub.getdbt.com/). You could find [dbt_utils on dbthub](https://hub.getdbt.com/dbt-labs/dbt_utils/latest/) and [dbt_utils github repo](https://github.com/dbt-labs/dbt-utils).
+
+Create a `packages.yml` file in your dbt project folder and echo in this to `packages.yml`
+```yml
+packages:
+  - package: dbt-labs/dbt_utils
+    version: 1.1.0
+```
+
+Then run it 
+```bash
+# build dependencies
+dbt deps
+
+# output
+20:12:11  Running with dbt=1.5.1
+20:12:11  Installing dbt-labs/dbt_utils
+20:12:12  Installed from version 1.1.0
+20:12:12  Up to date!
+```
 Now you are good to do!
 
 

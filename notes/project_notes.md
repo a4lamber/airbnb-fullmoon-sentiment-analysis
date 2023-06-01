@@ -763,7 +763,45 @@ In the output, you should see `6 of 8 START test positive_value_dim_listings_cle
 
 ## Lab: Installing third-party packages
 
+After you build you dependencies as suggested in the [installation section of READNE here](../README.md). 
 
+Go to the [models/fct/fct_reviews.sql](../dbtlearn/models/fct/fct_reviews.sql) to modify it by creating a surrogate key using the third-party dbt-utils
+
+```sql
+{{
+    config(
+        materialized = 'incremental',
+        on_schema_change = 'fail'
+    )
+}}
+
+-- 用package dbt_utils
+with src_reviews AS (
+    SELECT * FROM {{ ref("src_reviews")}}
+)
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['listing_id','review_date','reviewer_name','review_text'])}} as review_id,
+    *
+FROM
+    src_reviews
+WHERE review_text IS NOT NULL
+-- jinja if statement
+{% if is_incremental() %}
+    AND review_date > (SELECT MAX(review_date) from {{ this }}) -- this refers to this script
+{% endif%}
+
+``` 
+
+Then you can build your model by 
+
+```bash
+# build it up from ground up
+dbt run --full-refresh
+```
+
+Now if you look at your `FCT_REVIEW` table, you should see the surrogate key for it
+
+![](../assets/3_surrogate_key.png)
 
 
 

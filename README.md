@@ -2,7 +2,7 @@
 
 
 # Full Moon 
-Anlysis customer sentiment analysis and study the effect of the full moon on customers' mood! (Hopefully our customers don't turn on wolverine mode and leave a bad review!)
+Airbnb customer sentiment analysis and study the effect of the full moon on customers' mood! (Hopefully our customers don't turn on wolverine mode and leave a bad review!)
 
 # Motivation
 

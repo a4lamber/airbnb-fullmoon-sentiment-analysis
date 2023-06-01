@@ -1,12 +1,12 @@
+-- data mart: to see whether full moon has an impact 
+-- on reviewer's mood via their comments on stays
+
+
 {{
     config(
         materialized = 'table',
     )
 }}
-
--- data mart: to see whether full moon has an impact 
--- on reviewer's mood via their comments on stays
-
 
 WITH fct_reviews AS (
     SELECT * FROM {{ ref('fct_reviews') }}

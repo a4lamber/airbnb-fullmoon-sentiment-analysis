@@ -1,0 +1,59 @@
+# define the source configuration
+# DE工作中，经常遇到的问题是raw data source改变了
+# 比如，我们原来的src_hosts.sql代码中
+# WITH raw_hosts AS (
+#     SELECT 
+#         *
+#     FROM
+#         airbnb.raw.raw_hosts
+# )
+# SELECT
+#     id AS host_id,
+#     name AS host_name,
+#     is_superhost,
+#     created_at,
+#     updated_at
+# FROM
+#     raw_hosts
+# 
+# 我们从<database>.<schema>.<raw_hosts>提取数据，但如果上游
+# 发生改变，我们就要去改sql code, 这个不科学, 所以dbt利用了jinja
+# template engine and yaml to do high level control, 
+# 
+# WITH raw_hosts AS (
+#     SELECT 
+#         *
+#     FROM
+#         {{ source('airbnb', "hosts") }}
+# )
+# SELECT
+#     id AS host_id,
+#     name AS host_name,
+#     is_superhost,
+#     created_at,
+#     updated_at
+# FROM
+#     raw_hosts
+# 这样我们在SQL中refer to airbnb.hosts 
+# 其对应的是airbnb.raw.raw_hosts
+
+version: 2
+
+sources:
+  - name: airbnb
+    schema: raw
+    tables:
+      - name: listings
+        identifier: raw_listings
+      
+      - name: hosts
+        identifier: raw_hosts
+
+      - name: reviews
+        identifier: raw_reviews
+        loaded_at_field: date
+        freshness:
+          # if no data inserted to reviews table within 1 hour, give warning
+          # if no data inserted to reviews table within 24 hours, give error
+          warn_after: {count: 1, period: hour} 
+          error_after: {count: 24, period: hour}

@@ -1,0 +1,37 @@
+# schema.yml: yaml file for tests in dbt. It's a convention to
+# use schema.yml in dbt but you don't have to
+#
+
+
+
+version: 2
+
+models:
+  - name: dim_listings_cleansed
+    columns:
+
+      # for the listing_id, check if unique and not_null (rules for PK)
+      - name: listing_id
+        tests:
+          - unique
+          - not_null
+      
+      # for the host_id column
+      # 1. check if not null
+      # 2. check if host_id column in "this" table (dim_listings_cleansed)
+      # is in relationship with host_id column of the dim_hosts_cleansed table
+      - name: host_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_hosts_cleansed')
+              field: host_id
+      
+      # for the room_type column, check if ENUM
+      - name: room_type
+        tests:
+          - accepted_values:
+              values: ["Entire home/apt",
+                       "Private room",
+                       "Shared room",
+                       "Hotel room"]

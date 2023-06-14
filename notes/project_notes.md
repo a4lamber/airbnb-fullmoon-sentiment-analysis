@@ -47,6 +47,7 @@
   - [Lab: Installing third-party packages](#lab-installing-third-party-packages)
 - [14 Documentation](#14-documentation)
 - [15 Analyses, Hooks and Exposures](#15-analyses-hooks-and-exposures)
+  - [Hooks](#hooks)
 - [16 dbt Hero](#16-dbt-hero)
 - [17 Debugging tests and testing with dbt-expectations](#17-debugging-tests-and-testing-with-dbt-expectations)
 
@@ -104,6 +105,7 @@ Some overhead of ETL
 
 ELT is a more modern approach that you load the data in the data warehouse and then do the necessary transformation inside the data warehouse.
 
+>  ELT和ETL最根本的区别是，先load到data warehouse后再做计算，还是用computing framework like pyspark在外面做计算.
 
 ## Summary
 Extract, transform and load, let's load into warehouse first 
@@ -239,9 +241,6 @@ The concept of SCD has been proposed by Ralph Kimball, a prominent figure in the
 | 3 | Adds new columns to the dimension table to reflect changes over time | Only a subset of historical data is important |
 
 Whether the historical data would be important is totally dependent on the business logics. Let's say for the airbnb project.
-
-Let's start with an example:
-- `SCD 1`:
 
 
 # 6 dbt
@@ -464,7 +463,7 @@ sources:
 
 Source freshness解决的问题是，DE经常需要确认数据是否在正常流动(from raw to data warehouse), 常常需要自己query一下last modified time, 而且没办法很简单的automate and get orchestrated. 如果以上的overhead可以被`dbt source freshness`来解决，那就很好了. 要掌握的点如下:
 - how to define `yaml` file to twist for source
-- 
+
 
 ```yml
 # define the source configuration
@@ -493,8 +492,10 @@ sources:
 ```
 
 After the writing up rules for the `sources.yml` file, we do the following steps:
-- check current source freshness
-- 
+- check current source freshness (是否需要变了, 变得多吗?)
+
+这里可以做个小lab, 就是往raw table中CRUD一个数据，然后check source freshness.
+
 
 
 # 11 Snapshot
@@ -808,9 +809,52 @@ Now if you look at your `FCT_REVIEW` table, you should see the surrogate key for
 
 # 14 Documentation
 
+There are three parts for the documentation
+- add description in your `yaml` files such as `source.yml` and `schemas.yml`
+- add fancy markdown to the documentation
+- add assets (your own images) to it
 
 # 15 Analyses, Hooks and Exposures
 
+- Understand how to store ad-hoc analytical queries in `dbt`
+- Work with dbt hooks to manage table permissions
+- Build a dashboard in Preset
+- Create a dbt exposure to document the dashboard
+
+
+
+## Hooks
+
+- in dbt, Hooks are SQLs that executed at predefined times
+- Hooks can be configured on the project, subfolder, or model level
+- Hooks types
+  - `on_run_start`: executed at the start of `dbt {run, seed, snapshot}`
+  - `on_run_end`: executed at the end of `dbt {run, seed, snapshot}`
+  - `pre-hook`: model/seed/snapshot is built
+  - `post-hook`: executed after a model/seed/snapshot is built
+
+
+```sql
+USE ROLE ACCOUNTADMIN;
+CREATE ROLE IF NOT EXISTS REPORTER;
+CREATE USER IF NOT EXISTS PRESET
+ PASSWORD='presetPassword123'
+ LOGIN_NAME='preset'
+ MUST_CHANGE_PASSWORD=FALSE
+ DEFAULT_WAREHOUSE='COMPUTE_WH'
+ DEFAULT_ROLE='REPORTER'
+ DEFAULT_NAMESPACE='AIRBNB.DEV'
+ COMMENT='Preset user for creating reports';
+GRANT ROLE REPORTER TO USER PRESET;
+GRANT ROLE REPORTER TO ROLE ACCOUNTADMIN;
+GRANT ALL ON WAREHOUSE COMPUTE_WH TO ROLE REPORTER;
+GRANT USAGE ON DATABASE AIRBNB TO ROLE REPORTER;
+GRANT USAGE ON SCHEMA AIRBNB.DEV TO ROLE REPORTER;
+GRANT SELECT ON ALL TABLES IN SCHEMA AIRBNB.DEV TO ROLE REPORTER;
+GRANT SELECT ON ALL VIEWS IN SCHEMA AIRBNB.DEV TO ROLE REPORTER;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA AIRBNB.DEV TO ROLE REPORTER;
+GRANT SELECT ON FUTURE VIEWS IN SCHEMA AIRBNB.DEV TO ROLE REPORTER;
+```
 # 16 dbt Hero
 
 Here is a link to the [forum](https://dbt-course-zero-to-hero.canny.io/course-update-requests) to dive deep into each individual topics related to dbt, things such as 
@@ -820,6 +864,8 @@ Here is a link to the [forum](https://dbt-course-zero-to-hero.canny.io/course-up
 - Dev, Prod Environments
 
 However, dbt also has its own [community forum](https://discourse.getdbt.com/) which is way better.
+
+好好学习吧，还有很多值得深挖的.
 
 # 17 Debugging tests and testing with dbt-expectations
 

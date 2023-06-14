@@ -1,17 +1,26 @@
-# schema.yml: yaml file for tests in dbt. It's a convention to
-# use schema.yml in dbt but you don't have to
-#
-
+# /**
+#  * @ Author: Adam Zhang
+#  * @ Create Time: 2023-06-01 12:52:36
+#  * @ Modified by: Adam Zhang
+#  * @ Modified time: 2023-06-09 23:45:20
+#  * @ Description:schema.yml for defining tests in dbt. It's a convention to
+#       use schema.yml in dbt but you don't have to use it. 
+# 
 
 
 version: 2
 
 models:
+  # dimension tables for dim listings
   - name: dim_listings_cleansed
+    description: >
+      This is the dimension table for listings_cleansed table.
+      It contains the information of the listings.
     columns:
-
       # for the listing_id, check if unique and not_null (rules for PK)
       - name: listing_id
+        description: >
+          The unique identifier for the listing.
         tests:
           - unique
           - not_null
@@ -21,6 +30,8 @@ models:
       # 2. check if host_id column in "this" table (dim_listings_cleansed)
       # is in relationship with host_id column of the dim_hosts_cleansed table
       - name: host_id
+        description: >
+          host_id, FK, use to connectd to dim_hosts_cleansed table
         tests:
           - not_null
           - relationships:
@@ -29,6 +40,8 @@ models:
       
       # for the room_type column, check if ENUM
       - name: room_type
+        description: >
+          The type of room/apartment.
         tests:
           - accepted_values:
               values: ["Entire home/apt",
@@ -37,5 +50,39 @@ models:
                        "Hotel room"]
       
       - name: minimum_nights
+        description: '{{ doc("dim_listings_cleansed_minimum_nights")}}'
         tests:
           - positive_value
+  # dimension table for hosts_cleansed table
+  - name: dim_hosts_cleansed
+    description: >
+      This is the dimension table for hosts_cleansed table.
+      It contains the information of the hosts.
+    columns:
+      - name: host_id
+        description: >
+          The unique identifier for the host.
+        tests:
+          - unique
+          - not_null
+      - name: host_name
+        description: >
+          The name of the host.
+        tests:
+          - not_null
+      - name: is_superhost
+        description: >
+          Whether the host is a superhost.
+        tests:
+          - accepted_values:
+              values: ["t", "f"]
+      - name: created_at
+        description: >
+          The date when the host was created.
+        tests:
+          - not_null
+      - name: updated_at
+        description: >
+          The date when the host was updated.
+        tests:
+          - not_null

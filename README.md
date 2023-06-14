@@ -6,27 +6,38 @@ Airbnb customer sentiment analysis and study the effect of the full moon on cust
 
 # Motivation
 
-The motivation of the project is to perform a sentiment ananlysis on airbnb public dataset. The goal of this project is to:
-- investigate the effect of fullmoon on the customered mood, characterized by the reviews they left for the airbnb listings.
-- get some practice in for [dbt](https://docs.getdbt.com/)
+The motivation of the project is to perform a sentiment analysis on airbnb public dataset. The goal of this project is to:
+- investigate the effect of full moon on the customers' mood, measured by the reviews they left for the airbnb listings (sorry, i just really enjoy these silly questions since it's so fun)
+- get some practice in for [dbt](https://docs.getdbt.com/), which from my point of view, would become a necessity.
 
 
-# Project Architecture
+# Pipeline Architecture
 
-The data pipeline has been done in a ELT process that involves:
-- `extraction`: get data from s3 bucket
+The data uses the ELT paradigm instead of ETL paradigm and the overall process involves
+- `extraction`: extract data from s3 bucket from airbnb
 - `load`: load into the snowflake first
-- `transformation`: apply necessary transformation with `dbt`.
+- `transformation`: apply basic cleaning, testing and business-logics transformation with `dbt`
+- `BI`: Business intelligence on the data mart
 
-The overall architecture is illustrated in the figure below
+The overall pipeline architecture is illustrated in the figure below
 
 ![](drawings/4_dbt_transformation.excalidraw.png)
 *overall architecture for the airbnb project*
 
+The final deliverable for the project is a dashboard designed with [Preset](https://preset.io/) for making dashboard, the following metrics are investigated:
+- percentage of superhost (hightly-rated host)
+- total number of hosts airbnb have
+- room type distribution
+- sentiment analysis over the year
+- listing price distribution
+- investigate the effect of full moon on customer's mood (this is for fun!)
+
+![](assets/4_dashboard.png)
+
 
 # Installation
 
-In this section, i will cover how to set up the `dbt` and `snowflake`
+In this section, i will cover how to set up the `dbt` and `snowflake`. As for set up `Preset`, please refer [here](./dashboard/README.md).
 ## Snowflake set-up
 
 General steps are here
@@ -122,4 +133,3 @@ Now you are good to do!
 
 
 # Reference
-- [dbtlearn github, provide resources for the project](https://github.com/nordquant/complete-dbt-bootcamp-zero-to-hero)
